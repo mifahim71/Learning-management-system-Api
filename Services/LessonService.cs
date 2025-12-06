@@ -9,11 +9,13 @@ namespace LearningManagementSystemApi.Services
 
         private readonly ILessonRepository _lessonRepository;
         private readonly ICourseRepository _courseRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
 
-        public LessonService(ILessonRepository lessonRepository, ICourseRepository _couseRepository)
+        public LessonService(ILessonRepository lessonRepository, ICourseRepository _couseRepository, IEnrollmentRepository enrollmentRepository)
         {
             _lessonRepository = lessonRepository;
             _courseRepository = _couseRepository;
+            _enrollmentRepository = enrollmentRepository;
         }
 
         public async Task<LessonCreateResponseDto?> CreateLessonAsync(int instructorId, int courseId, LessonCreateRequestDto requestDto)
@@ -48,30 +50,36 @@ namespace LearningManagementSystemApi.Services
 
         public async Task<List<LessonResponseDto>> GetCourseLessonsAsync(string role, int userId, int courseId)
         {
-            if(role == "ADMIN" || role == "INSTRUCTOR")
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null || course.Lessons == null)
+                return new List<LessonResponseDto>();
+
+            if (role == "ADMIN" || role == "INSTRUCTOR")
             {
-                var course = await _courseRepository.GetByIdAsync(courseId);
-                if (course == null || course.AppUserId != userId)
-                {
+                if (course.AppUserId != userId)
                     return new List<LessonResponseDto>();
-                }
-
-                if(course.Lessons == null)
-                {
+            }
+            else if (role == "STUDENT")
+            {
+                var enrollment = await _enrollmentRepository.GetEnrollmentAsync(userId, courseId);
+                if (enrollment == null)
                     return new List<LessonResponseDto>();
-                }
+            }
+            else
+            {
+                return new List<LessonResponseDto>();
+            }
 
-                return course.Lessons.Select(lesson => new LessonResponseDto
+            return course.Lessons
+                .Select(lesson => new LessonResponseDto
                 {
                     Id = lesson.Id,
                     Title = lesson.Title,
                     Content = lesson.Content
-                }).ToList();
-            }
-            
-            return new List<LessonResponseDto>();
-
+                })
+                .ToList();
         }
+
 
         public Task<List<LessonResponseDto>> GetLessonsByCourseIdAsync(int courseId)
         {
