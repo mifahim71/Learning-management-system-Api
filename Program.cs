@@ -63,6 +63,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 
 
 //repository registration
@@ -70,6 +71,7 @@ builder.Services.AddScoped<IAuthRepository,  AuthRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<ILessonRepository, LessonRepository>();
+builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 
 var app = builder.Build();
 

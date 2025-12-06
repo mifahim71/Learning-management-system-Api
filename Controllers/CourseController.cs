@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystemApi.Dtos;
+using LearningManagementSystemApi.Models;
 using LearningManagementSystemApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,12 +15,14 @@ namespace LearningManagementSystemApi.Controllers
 
         private readonly ICourseService _courseService;
         private readonly ILessonService _lessonService;
+        private readonly IEnrollmentService _enrollmentService;
         private readonly ILogger<CourseController> _logger;
 
-        public CourseController(ICourseService courseService, ILogger<CourseController> logger, ILessonService lessonService)
+        public CourseController(ICourseService courseService, ILogger<CourseController> logger, ILessonService lessonService, IEnrollmentService enrollmentService)
         {
             _courseService = courseService;
             _logger = logger;
+            _enrollmentService = enrollmentService;
             _lessonService = lessonService;
         }
 
@@ -133,5 +136,53 @@ namespace LearningManagementSystemApi.Controllers
 
             return await _lessonService.GetCourseLessonsAsync(role, userId, courseId);
         }
+
+
+        [HttpPost("{courseId}/enrollment")]
+        [Authorize(Roles = "STUDENT")]
+        public async Task<IActionResult> EnrollInCourseAsync(int courseId)
+        {
+            var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            _logger.LogWarning("Student Id {} and courseId {}", studentId, courseId);
+            bool success = await _enrollmentService.CourseEnrollmentAsync(courseId, studentId);
+            
+            if (!success)
+            {
+                return BadRequest();
+            }
+
+            return Created();
+        }
+
+
+        [HttpGet("my-courses")]
+        [Authorize(Roles = "STUDENT")]
+        public async Task<ActionResult<List<CourseResponseDto>>> GetEnrolledCoursesAsync()
+        {
+            var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var responseDtos = await _enrollmentService.GetEnrolledCoursesAsync(studentId);
+
+            return Ok(responseDtos);
+        }
+
+        [HttpPatch("{courseId}/progress")]
+        [Authorize(Roles = "STUDENT")]
+        public async Task<IActionResult> UpdateProgressAsync(int courseId, [FromBody] EnrollmentProgressUpdateDto updateDto)
+        {
+
+            var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var success = await _enrollmentService.UpdateProgressAsync(studentId, courseId, updateDto);
+
+            if (success)
+            {
+                return NoContent();
+            }
+
+            return NotFound();
+        }
+        
     }
 }
