@@ -62,15 +62,14 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
-
-
-
+builder.Services.AddScoped<ILessonService, LessonService>();
 
 
 //repository registration
 builder.Services.AddScoped<IAuthRepository,  AuthRepository>();
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<ILessonRepository, LessonRepository>();
 
 var app = builder.Build();
 

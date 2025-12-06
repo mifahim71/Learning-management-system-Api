@@ -11,7 +11,7 @@
         public AppUser? AppUser { get; set; }
 
 
-        public List<Lesson>? Lessons { get; set; }
+        public List<Lesson>? Lessons { get; set; } = new();
 
         public List<Enrollment>? Enrollments { get; set; }
 

@@ -13,13 +13,14 @@ namespace LearningManagementSystemApi.Controllers
     {
 
         private readonly ICourseService _courseService;
+        private readonly ILessonService _lessonService;
         private readonly ILogger<CourseController> _logger;
 
-        public CourseController(ICourseService courseService, ILogger<CourseController> logger)
+        public CourseController(ICourseService courseService, ILogger<CourseController> logger, ILessonService lessonService)
         {
             _courseService = courseService;
             _logger = logger;
-
+            _lessonService = lessonService;
         }
 
         [HttpPost]
@@ -99,6 +100,38 @@ namespace LearningManagementSystemApi.Controllers
             {
                 return NotFound();
             }
+        }
+
+
+        [HttpPost("{courseId}/lessons")]
+        [Authorize(Roles = "INSTRUCTOR,ADMIN")]
+        public async Task<ActionResult<LessonCreateResponseDto>> AddLessonAsync(int courseId, [FromBody] LessonCreateRequestDto requestDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            int instructorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            var lessonCreateResponseDto = await _lessonService.CreateLessonAsync(instructorId, courseId, requestDto);
+
+            if (lessonCreateResponseDto == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(lessonCreateResponseDto);
+        }
+
+        [HttpGet("{courseId}/lessons")]
+        [Authorize]
+        public async Task<List<LessonResponseDto>> GetLessonsAsync(int courseId)
+        {
+            var role = User.FindFirst(ClaimTypes.Role)!.Value;
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            return await _lessonService.GetCourseLessonsAsync(role, userId, courseId);
         }
     }
 }

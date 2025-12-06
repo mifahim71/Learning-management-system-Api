@@ -41,7 +41,14 @@ namespace LearningManagementSystemApi.Repositories
 
         public async Task<Course?> GetByIdAsync(int courseId)
         {
-            return await _context.Courses.Include(c => c.Lessons).FirstOrDefaultAsync(c => c.Id == courseId);
+            var course = await _context.Courses.Include(c => c.Lessons).FirstOrDefaultAsync(c => c.Id == courseId);
+
+            if(course == null)
+            {
+                return null;
+            }
+
+            return course;
         }
 
         public async Task UpdateAsync(Course course)
