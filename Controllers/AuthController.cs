@@ -14,12 +14,14 @@ namespace LearningManagementSystemApi.Controllers
 
         private readonly IAuthService _authService;
         private readonly IJwtService _jwtService;
+        private readonly IRedisService _redisService;
         
 
-        public AuthController(IAuthService authService, IJwtService jwtService)
+        public AuthController(IAuthService authService, IJwtService jwtService, IRedisService redisService)
         {
             _authService = authService;
             _jwtService = jwtService;
+            _redisService = redisService;
             
         }
 
@@ -59,5 +61,7 @@ namespace LearningManagementSystemApi.Controllers
             return new JwtResponseDto { Token = token };
 
         }
+
+
     }
 }

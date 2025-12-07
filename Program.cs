@@ -5,6 +5,7 @@ using LearningManagementSystemApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -57,6 +58,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+//Redis Service
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = builder.Configuration.GetConnectionString("Redis");
+    return ConnectionMultiplexer.Connect(configuration!);
+});
 
 //services registration
 builder.Services.AddScoped<IJwtService, JwtService>();
@@ -65,7 +72,7 @@ builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ILessonService, LessonService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
-
+builder.Services.AddScoped<IRedisService,  RedisService>();
 
 //repository registration
 builder.Services.AddScoped<IAuthRepository,  AuthRepository>();

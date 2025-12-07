@@ -128,3 +128,6 @@ C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagement
 C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\obj\Debug\net10.0\LearningManagementSystemApi.sourcelink.json
+C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\Pipelines.Sockets.Unofficial.dll
+C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\StackExchange.Redis.dll
+C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\System.IO.Hashing.dll
