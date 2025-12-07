@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystemApi.Dtos;
+using LearningManagementSystemApi.Exceptions;
 using LearningManagementSystemApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -27,9 +28,9 @@ namespace LearningManagementSystemApi.Controllers
 
             UserProfileResponseDto responseDto = await _userProfileService.GetUserProfileAsync(email!);
 
-            if (responseDto == null) { 
+            if (responseDto == null) {
 
-                return NotFound();
+                throw new UserNotFoundException("User Profile Not found");
             }
 
             return Ok(responseDto);
@@ -46,7 +47,7 @@ namespace LearningManagementSystemApi.Controllers
 
             if (responseDto == null)
             {
-                return NotFound();
+                throw new UserNotFoundException("User profile not found");
             }
 
             return Ok(responseDto);

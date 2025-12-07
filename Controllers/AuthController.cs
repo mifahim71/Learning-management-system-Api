@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystemApi.Dtos;
+using LearningManagementSystemApi.Exceptions;
 using LearningManagementSystemApi.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -45,7 +46,7 @@ namespace LearningManagementSystemApi.Controllers
             Models.AppUser appUser = await _authService.ValidateUser(requestDto);
             if (appUser == null)
             {
-                return Unauthorized("Invalid email or password.");
+                throw new UserNotFoundException("Invalid Email or Password, User not found");
             }
 
             string token = _jwtService.GenerateToken(new[]

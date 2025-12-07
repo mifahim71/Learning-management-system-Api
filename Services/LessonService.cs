@@ -1,6 +1,7 @@
 ﻿using LearningManagementSystemApi.Dtos;
 using LearningManagementSystemApi.Repositories;
 using LearningManagementSystemApi.Models;
+using LearningManagementSystemApi.Exceptions;
 
 namespace LearningManagementSystemApi.Services
 {
@@ -21,9 +22,14 @@ namespace LearningManagementSystemApi.Services
         public async Task<LessonCreateResponseDto?> CreateLessonAsync(int instructorId, int courseId, LessonCreateRequestDto requestDto)
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
-            if (course == null || course.AppUserId != instructorId)
+            if (course == null)
             {
-                return null; 
+                throw new CourseNotFoundException($"Course with courseId:{courseId} not found"); 
+            }
+
+            if(course.AppUserId != instructorId)
+            {
+                throw new ForbiddenException($"The instructorId:{instructorId}, doesn't own this course");
             }
 
             var lesson = new Lesson
@@ -36,7 +42,7 @@ namespace LearningManagementSystemApi.Services
             var savedLesson = await _lessonRepository.CreateLessonAsync(lesson);
             if (savedLesson == null)
             {
-                return null;
+                throw new LessonCreationFailedException("Failed to create a new Lesson");
             }
 
             return new LessonCreateResponseDto
@@ -51,23 +57,27 @@ namespace LearningManagementSystemApi.Services
         public async Task<List<LessonResponseDto>> GetCourseLessonsAsync(string role, int userId, int courseId)
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
-            if (course == null || course.Lessons == null)
+            if (course == null)
+                throw new CourseNotFoundException($"There is no course exists with the courseId:{courseId}");
+
+            if(course.Lessons == null)
                 return new List<LessonResponseDto>();
+
 
             if (role == "ADMIN" || role == "INSTRUCTOR")
             {
                 if (course.AppUserId != userId)
-                    return new List<LessonResponseDto>();
+                    throw new ForbiddenException($"The instructor doesn't own this course:{courseId}");
             }
             else if (role == "STUDENT")
             {
                 var enrollment = await _enrollmentRepository.GetEnrollmentAsync(userId, courseId);
                 if (enrollment == null)
-                    return new List<LessonResponseDto>();
+                    throw new ForbiddenException("You aren't enrolled in this course");
             }
             else
             {
-                return new List<LessonResponseDto>();
+                throw new ForbiddenException("Invalid user credentials");
             }
 
             return course.Lessons

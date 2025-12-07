@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystemApi.Dtos;
+using LearningManagementSystemApi.Exceptions;
 using LearningManagementSystemApi.Models;
 using LearningManagementSystemApi.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -38,7 +39,7 @@ namespace LearningManagementSystemApi.Services
 
             if (!isCreated)
             {
-                throw new Exception("Failed to create user profile");
+                throw new ProfileCreationFailedException("Failed to create user profile");
             }
 
             return new AuthRegisterResponseDto

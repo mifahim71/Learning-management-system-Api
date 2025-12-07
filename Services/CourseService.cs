@@ -1,6 +1,7 @@
 ﻿using LearningManagementSystemApi.Dtos;
 using LearningManagementSystemApi.Models;
 using LearningManagementSystemApi.Repositories;
+using LearningManagementSystemApi.Exceptions;
 
 namespace LearningManagementSystemApi.Services
 {
@@ -31,7 +32,7 @@ namespace LearningManagementSystemApi.Services
 
             if(savedCourse == null)
             {
-                return null;
+                throw new CourseCreationFiledException("An error occurred while creating the course.");
             }
 
             return new CourseCreateResponseDto
@@ -47,7 +48,7 @@ namespace LearningManagementSystemApi.Services
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
             {
-                return false;
+                throw new CourseDeletionFailedException($"Failed to delete the course wit Id:{courseId}");
             }
 
             await _courseRepository.DeleteAsync(course);
@@ -73,13 +74,13 @@ namespace LearningManagementSystemApi.Services
             return courseResponseDtos;
         }
 
-        public async Task<CourseWithLessonResponseDto?> GetCourseByIdAsync(int courseId)
+        public async Task<CourseWithLessonResponseDto> GetCourseByIdAsync(int courseId)
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
 
             if (course == null)
             {
-                return null;
+                throw new CourseNotFoundException($"Course with Id:{courseId} not found");
             }
 
             var responseDto = new CourseWithLessonResponseDto
@@ -105,12 +106,12 @@ namespace LearningManagementSystemApi.Services
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
             {
-                return false;
+                throw new CourseNotFoundException($"Course with Id:{courseId} not found");
             }
 
             if(course.AppUserId != userId)
             {
-                return false;
+                throw new ForbiddenException($"The userId:{userId} doesn't own this course");
             }
 
             course.Title = requestDto.title ?? course.Title;

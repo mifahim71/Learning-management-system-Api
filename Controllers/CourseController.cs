@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using LearningManagementSystemApi.Exceptions;
 
 namespace LearningManagementSystemApi.Controllers
 {
@@ -40,7 +41,7 @@ namespace LearningManagementSystemApi.Controllers
             var responseDto = await _courseService.CreateCouseAsync(userId, requestDto);
             if (responseDto == null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while creating the course.");
+                throw new CourseCreationFiledException("An error occurred while creating the course.");
             }
 
             return Ok(responseDto);
@@ -62,10 +63,6 @@ namespace LearningManagementSystemApi.Controllers
         {
             var responseDto = await _courseService.GetCourseByIdAsync(courseId);
 
-            if (responseDto == null)
-            {
-                return NotFound();
-            }
 
             return Ok(responseDto);
         }
@@ -94,15 +91,8 @@ namespace LearningManagementSystemApi.Controllers
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteCourseAsync(int courseId)
         {
-            bool success = await _courseService.DeleteCourseAsync(courseId);
-            if (success)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return NotFound();
-            }
+            await _courseService.DeleteCourseAsync(courseId);
+            return NoContent();
         }
 
 
@@ -145,12 +135,7 @@ namespace LearningManagementSystemApi.Controllers
             var studentId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
             _logger.LogWarning("Student Id {} and courseId {}", studentId, courseId);
-            bool success = await _enrollmentService.CourseEnrollmentAsync(courseId, studentId);
-            
-            if (!success)
-            {
-                return BadRequest();
-            }
+            await _enrollmentService.CourseEnrollmentAsync(courseId, studentId);
 
             return Created();
         }

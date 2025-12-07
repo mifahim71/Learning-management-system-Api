@@ -1,5 +1,6 @@
 ﻿
 using LearningManagementSystemApi.Dtos;
+using LearningManagementSystemApi.Exceptions;
 using LearningManagementSystemApi.Models;
 using LearningManagementSystemApi.Repositories;
 
@@ -22,12 +23,12 @@ namespace LearningManagementSystemApi.Services
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
             {
-                return false;
+                throw new CourseNotFoundException($"Course with Id:{courseId} not found");
             }
 
             var enrollment = await _enrollmentRepository.GetEnrollmentAsync(studentId, courseId);
             if (enrollment != null) {
-                return false;
+                throw new ForbiddenException("You have already access of this course");
             }
 
             var savedEnrollment = new Enrollment
@@ -46,6 +47,7 @@ namespace LearningManagementSystemApi.Services
         {
             var enrollments = await _enrollmentRepository.GetEnrollmentsAsync(studentId);
 
+            
             var responseDto = enrollments.Select(e => new CourseResponseDto
             {
                 Title = e.Course!.Title,
@@ -63,7 +65,7 @@ namespace LearningManagementSystemApi.Services
             var enrollment = await _enrollmentRepository.GetEnrollmentAsync(studentId, courseId);
             if (enrollment == null)
             {
-                return false;
+                throw new EnrollmentNotFoundException("Enrollment not found");
             }
 
             enrollment.Progress = updateDto.Progress;

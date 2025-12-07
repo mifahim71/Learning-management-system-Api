@@ -1,4 +1,5 @@
 using LearningManagementSystemApi.Data;
+using LearningManagementSystemApi.Middlewares;
 using LearningManagementSystemApi.Repositories;
 using LearningManagementSystemApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -73,6 +74,11 @@ builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<ILessonRepository, LessonRepository>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 
+
+//Middleware registration
+builder.Services.AddTransient<GlobalExceptionMiddleware>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -84,6 +90,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.MapControllers();
 

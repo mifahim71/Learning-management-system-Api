@@ -1,4 +1,5 @@
 ﻿using LearningManagementSystemApi.Dtos;
+using LearningManagementSystemApi.Exceptions;
 using LearningManagementSystemApi.Models;
 using LearningManagementSystemApi.Repositories;
 
@@ -15,16 +16,14 @@ namespace LearningManagementSystemApi.Services
             _userProfileRepository = userProfileRepository;
             _authRepository = authRepository;
         }
-        public async Task<UserProfileResponseDto?> GetUserProfileAsync(string email)
+        public async Task<UserProfileResponseDto> GetUserProfileAsync(string email)
         {
 
             var appUser = await _authRepository.GetByEmailAsync(email);
 
-            
-
             if (appUser == null)
             {
-                return null;
+                throw new UserNotFoundException("User Profile Not found");
             }
 
             return new UserProfileResponseDto
@@ -44,7 +43,7 @@ namespace LearningManagementSystemApi.Services
 
             if (appUser == null)
             {
-                return null;
+                throw new UserNotFoundException("User not found");
             }
 
             var userProfile = appUser.UserProfile;
