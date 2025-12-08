@@ -3,6 +3,7 @@ using LearningManagementSystemApi.Models;
 using LearningManagementSystemApi.Repositories;
 using LearningManagementSystemApi.Exceptions;
 using System.Text.Json;
+using AutoMapper;
 
 namespace LearningManagementSystemApi.Services
 {
@@ -12,27 +13,28 @@ namespace LearningManagementSystemApi.Services
         private readonly ICourseRepository _courseRepository;
         private readonly ILogger<CourseService> _logger;
         private readonly IRedisService _redisService;
+        private readonly IMapper _mapper;
 
         private static string REDIS_PREFIX = "redis:course:";
 
-        public CourseService(ICourseRepository courseRepository, ILogger<CourseService> logger, IRedisService redisService)
+        public CourseService(ICourseRepository courseRepository, ILogger<CourseService> logger, IRedisService redisService, IMapper mapper)
         {
             _courseRepository = courseRepository;
             _logger = logger;
             _redisService = redisService;
+            _mapper = mapper;
         }
 
         public async Task<CourseCreateResponseDto?> CreateCouseAsync(int userId, CourseCreateRequestDto requestDto)
         {
-            var course = new Course
-            {
-                Title = requestDto.Title,
-                Description = requestDto.Description,
-                AppUserId = userId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
 
+            var course = _mapper.Map<Course>(requestDto);
+
+
+            course.AppUserId = userId;
+            course.CreatedAt = DateTime.UtcNow;
+            course.UpdatedAt = DateTime.UtcNow;
+            
             var savedCourse = await _courseRepository.CreateAsync(course);
 
             if(savedCourse == null)
@@ -41,12 +43,9 @@ namespace LearningManagementSystemApi.Services
             }
 
             await _redisService.RemoveAsync(REDIS_PREFIX + "all");
-            return new CourseCreateResponseDto
-            {
-                Id = savedCourse.Id,
-                Title = savedCourse.Title,
-                Description = savedCourse.Description
-            };
+
+            return _mapper.Map<CourseCreateResponseDto>(savedCourse);
+            
         }
 
         public async Task<bool> DeleteCourseAsync(int courseId)
@@ -72,17 +71,8 @@ namespace LearningManagementSystemApi.Services
             }
             var courses = await _courseRepository.GetAllAsync();
 
-            var courseResponseDtos = courses.Select(course =>
-            {
-                return new CourseResponseDto
-                {
-                    Id = course.Id,
-                    Title = course.Title,
-                    Description = course.Description,
-                    CreatedAt = course.CreatedAt,
-                    InstructorId = course.AppUserId
-                };
-            }).ToList();
+
+            var courseResponseDtos = _mapper.Map<List<CourseResponseDto>>(courses);
 
             await _redisService.SetClassListsAsync<CourseResponseDto>(REDIS_PREFIX + "all", courseResponseDtos, TimeSpan.FromMinutes(2));
 
@@ -106,18 +96,8 @@ namespace LearningManagementSystemApi.Services
                 throw new CourseNotFoundException($"Course with Id:{courseId} not found");
             }
 
-            var responseDto = new CourseWithLessonResponseDto
-            {
-                Id = course.Id,
-                Title = course.Title,
-                Description = course.Description,
-                Lessons = course.Lessons?.Select(lesson => new LessonResponseDto
-                {
-                    Id = lesson.Id,
-                    Title = lesson.Title,
-                    Content = lesson.Content
-                }).ToList()
-            };
+            var responseDto = _mapper.Map<CourseWithLessonResponseDto>(course);
+            
 
             await _redisService.SetAsync(REDIS_PREFIX + courseId, JsonSerializer.Serialize(responseDto), TimeSpan.FromMinutes(2));
 

@@ -1,4 +1,5 @@
-﻿using LearningManagementSystemApi.Dtos;
+﻿using AutoMapper;
+using LearningManagementSystemApi.Dtos;
 using LearningManagementSystemApi.Exceptions;
 using LearningManagementSystemApi.Models;
 using LearningManagementSystemApi.Repositories;
@@ -10,21 +11,20 @@ namespace LearningManagementSystemApi.Services
     {
         private readonly IAuthRepository _authRepository;
         private readonly IUserProfileRepository _userProfileRepository;
+        private readonly IMapper _mapper;
 
-        public AuthService(IAuthRepository authRepository, IUserProfileRepository userProfileRepository)
+        public AuthService(IAuthRepository authRepository, IUserProfileRepository userProfileRepository, IMapper mapper)
         {
             _authRepository = authRepository;
             _userProfileRepository = userProfileRepository;
+            _mapper = mapper;
         }
         
         public async Task<AuthRegisterResponseDto> Register(AuthRegisterRequestDto requestDto)
         {
+
+            var user = _mapper.Map<AppUser>(requestDto);
             
-            var user = new AppUser
-            {
-                Email = requestDto.Email,
-                Role = requestDto.Role,  
-            };
             user.PasswordHash = new PasswordHasher<AppUser>().HashPassword(user, requestDto.Password);
 
             int userId = await _authRepository.createAsync(user);
@@ -42,14 +42,7 @@ namespace LearningManagementSystemApi.Services
                 throw new ProfileCreationFailedException("Failed to create user profile");
             }
 
-            return new AuthRegisterResponseDto
-            {
-                Email = user.Email,
-                Role = user.Role.ToString(),
-            };
-
-
-            
+            return _mapper.Map<AuthRegisterResponseDto>(user);
         }
 
         public async Task<AppUser> ValidateUser(AuthLoginRequestDto requestDto)

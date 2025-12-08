@@ -1,4 +1,5 @@
 ﻿
+using AutoMapper;
 using LearningManagementSystemApi.Dtos;
 using LearningManagementSystemApi.Exceptions;
 using LearningManagementSystemApi.Models;

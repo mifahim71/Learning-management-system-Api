@@ -131,3 +131,5 @@ C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagement
 C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\Pipelines.Sockets.Unofficial.dll
 C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\StackExchange.Redis.dll
 C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\System.IO.Hashing.dll
+C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\AutoMapper.dll
+C:\Users\user\OneDrive\Desktop\C#\LearningManagementSystemApi\LearningManagementSystemApi\bin\Debug\net10.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll

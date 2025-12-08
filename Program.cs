@@ -85,6 +85,9 @@ builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 //Middleware registration
 builder.Services.AddTransient<GlobalExceptionMiddleware>();
 
+//Profiles registration
+builder.Services.AddAutoMapper(typeof(Program));
+
 
 var app = builder.Build();
 

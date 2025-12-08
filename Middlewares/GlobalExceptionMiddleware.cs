@@ -57,7 +57,7 @@ namespace LearningManagementSystemApi.Middlewares
 
                 default:
                     statusCode = HttpStatusCode.InternalServerError;
-                    message = "Something went wrong.";
+                    message = ex.Message;
                     break;
             }
 
