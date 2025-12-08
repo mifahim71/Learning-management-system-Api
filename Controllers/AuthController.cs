@@ -14,14 +14,12 @@ namespace LearningManagementSystemApi.Controllers
 
         private readonly IAuthService _authService;
         private readonly IJwtService _jwtService;
-        private readonly IRedisService _redisService;
         
 
-        public AuthController(IAuthService authService, IJwtService jwtService, IRedisService redisService)
+        public AuthController(IAuthService authService, IJwtService jwtService)
         {
             _authService = authService;
             _jwtService = jwtService;
-            _redisService = redisService;
             
         }
 

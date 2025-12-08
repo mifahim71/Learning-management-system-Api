@@ -11,12 +11,17 @@ namespace LearningManagementSystemApi.Services
         private readonly ILessonRepository _lessonRepository;
         private readonly ICourseRepository _courseRepository;
         private readonly IEnrollmentRepository _enrollmentRepository;
+        private readonly IRedisService _redisService;
+        
 
-        public LessonService(ILessonRepository lessonRepository, ICourseRepository _couseRepository, IEnrollmentRepository enrollmentRepository)
+        private const string REDIS_PREFIX = "redis:course:";
+
+        public LessonService(ILessonRepository lessonRepository, ICourseRepository _couseRepository, IEnrollmentRepository enrollmentRepository, IRedisService redisService)
         {
             _lessonRepository = lessonRepository;
             _courseRepository = _couseRepository;
             _enrollmentRepository = enrollmentRepository;
+            _redisService = redisService;
         }
 
         public async Task<LessonCreateResponseDto?> CreateLessonAsync(int instructorId, int courseId, LessonCreateRequestDto requestDto)
@@ -32,6 +37,8 @@ namespace LearningManagementSystemApi.Services
                 throw new ForbiddenException($"The instructorId:{instructorId}, doesn't own this course");
             }
 
+
+
             var lesson = new Lesson
             {
                 Title = requestDto.Title,
@@ -44,6 +51,8 @@ namespace LearningManagementSystemApi.Services
             {
                 throw new LessonCreationFailedException("Failed to create a new Lesson");
             }
+
+            await _redisService.RemoveAsync(REDIS_PREFIX + courseId + ":lessons");
 
             return new LessonCreateResponseDto
             {
@@ -63,6 +72,11 @@ namespace LearningManagementSystemApi.Services
             if(course.Lessons == null)
                 return new List<LessonResponseDto>();
 
+            var cachedResponseDtos = await _redisService.GetClassListAsync<LessonResponseDto>(REDIS_PREFIX + courseId + ":lessons");
+            if(cachedResponseDtos != null)
+            {
+                return cachedResponseDtos!;
+            }
 
             if (role == "ADMIN" || role == "INSTRUCTOR")
             {
@@ -80,7 +94,7 @@ namespace LearningManagementSystemApi.Services
                 throw new ForbiddenException("Invalid user credentials");
             }
 
-            return course.Lessons
+            var lessonResponseDtos = course.Lessons
                 .Select(lesson => new LessonResponseDto
                 {
                     Id = lesson.Id,
@@ -88,6 +102,10 @@ namespace LearningManagementSystemApi.Services
                     Content = lesson.Content
                 })
                 .ToList();
+
+            await _redisService.SetClassListsAsync<LessonResponseDto>(REDIS_PREFIX + courseId + ":lessons", lessonResponseDtos, TimeSpan.FromMinutes(1));
+
+            return lessonResponseDtos;
         }
 
 

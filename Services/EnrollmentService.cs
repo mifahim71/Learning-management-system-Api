@@ -11,11 +11,15 @@ namespace LearningManagementSystemApi.Services
 
         private readonly IEnrollmentRepository _enrollmentRepository;
         private readonly ICourseRepository _courseRepository;
+        private readonly IRedisService _redisService;
 
-        public EnrollmentService(IEnrollmentRepository enrollmentRepository, ICourseRepository courseRepository)
+        private const string REDIS_PREFIX = "redis:course:";
+
+        public EnrollmentService(IEnrollmentRepository enrollmentRepository, ICourseRepository courseRepository, IRedisService redisService)
         {
             _enrollmentRepository = enrollmentRepository;
             _courseRepository = courseRepository;
+            _redisService = redisService;
         }
         public async Task<bool> CourseEnrollmentAsync(int courseId, int studentId)
         {
@@ -40,6 +44,7 @@ namespace LearningManagementSystemApi.Services
             };
 
             bool success = await _enrollmentRepository.CourseEnrollmentAsync(savedEnrollment);
+            await _redisService.RemoveAsync(REDIS_PREFIX + "student:" + studentId);
             return success;
         }
 
@@ -47,7 +52,12 @@ namespace LearningManagementSystemApi.Services
         {
             var enrollments = await _enrollmentRepository.GetEnrollmentsAsync(studentId);
 
-            
+            var cachedResponse = await _redisService.GetClassListAsync<CourseResponseDto>(REDIS_PREFIX + "student:" + studentId);
+            if (cachedResponse != null)
+            {
+                return cachedResponse!;
+            }
+
             var responseDto = enrollments.Select(e => new CourseResponseDto
             {
                 Title = e.Course!.Title,
@@ -57,6 +67,7 @@ namespace LearningManagementSystemApi.Services
                 InstructorId = studentId
             }).ToList();
 
+            await _redisService.SetClassListsAsync<CourseResponseDto>(REDIS_PREFIX + "student:" + studentId, responseDto, TimeSpan.FromMinutes(1));
             return responseDto;
         }
 
